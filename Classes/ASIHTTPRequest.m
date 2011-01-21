@@ -278,6 +278,7 @@ static NSOperationQueue *sharedQueue = nil;
 	[self setShouldResetDownloadProgress:YES];
 	[self setShouldResetUploadProgress:YES];
 	[self setAllowCompressedResponse:YES];
+	[self setShouldAffectNetworkIndicator:YES];
 	[self setShouldWaitToInflateCompressedResponses:YES];
 	[self setDefaultResponseEncoding:NSISOLatin1StringEncoding];
 	[self setShouldPresentProxyAuthenticationDialog:YES];
@@ -3439,8 +3440,9 @@ static NSOperationQueue *sharedQueue = nil;
 	if ([self readStream] && ![self readStreamIsScheduled]) {
 
 		[connectionsLock lock];
-		runningRequestCount++;
-		if (shouldUpdateNetworkActivityIndicator) {
+		if (shouldAffectNetworkIndicator) //GroupMe
+			runningRequestCount++;
+		if (shouldAffectNetworkIndicator && shouldUpdateNetworkActivityIndicator) {
 			[[self class] showNetworkActivityIndicator];
 		}
 		[connectionsLock unlock];
@@ -3460,7 +3462,9 @@ static NSOperationQueue *sharedQueue = nil;
 	if ([self readStream] && [self readStreamIsScheduled]) {
 
 		[connectionsLock lock];
-		runningRequestCount--;
+		if (shouldAffectNetworkIndicator) //GroupMe
+			runningRequestCount--;
+
 		if (shouldUpdateNetworkActivityIndicator && runningRequestCount == 0) {
 			// This call will wait half a second before turning off the indicator
 			// This can prevent flicker when you have a single request finish and then immediately start another request
@@ -4575,6 +4579,7 @@ static NSOperationQueue *sharedQueue = nil;
 @synthesize secondsToCache;
 @synthesize clientCertificates;
 @synthesize redirectURL;
+@synthesize shouldAffectNetworkIndicator; //GroupMe
 #if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
 @synthesize shouldContinueWhenAppEntersBackground;
 #endif

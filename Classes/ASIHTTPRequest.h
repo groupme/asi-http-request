@@ -159,6 +159,10 @@ typedef void (^ASIDataBlock)(NSData *data);
 	// If shouldCompressRequestBody is true, the request body will be gzipped. Default is false.
 	// You will probably need to enable this feature on your webserver to make this work. Tested with apache only.
 	BOOL shouldCompressRequestBody;
+
+	// GroupMe Addition.
+	BOOL shouldAffectNetworkIndicator;
+	
 	
 	// When downloadDestinationPath is set, the result of this request will be downloaded to the file at this location
 	// If downloadDestinationPath is not set, download data will be stored in memory
@@ -945,6 +949,9 @@ typedef void (^ASIDataBlock)(NSData *data);
 @property (assign) BOOL shouldRedirect;
 @property (assign) BOOL validatesSecureCertificate;
 @property (assign) BOOL shouldCompressRequestBody;
+// GroupMe Addition.
+@property (assign) BOOL shouldAffectNetworkIndicator;
+
 @property (retain) NSURL *PACurl;
 @property (retain) NSString *authenticationScheme;
 @property (retain) NSString *proxyAuthenticationScheme;
