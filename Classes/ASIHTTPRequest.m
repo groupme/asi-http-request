@@ -278,7 +278,8 @@ static NSOperationQueue *sharedQueue = nil;
 	[self setShouldResetDownloadProgress:YES];
 	[self setShouldResetUploadProgress:YES];
 	[self setAllowCompressedResponse:YES];
-	[self setShouldAffectNetworkIndicator:YES];
+	[self setShouldAffectNetworkIndicator:YES]; //GroupMe
+    [self setShouldCallbackOnMainThread:YES]; //GroupMe
 	[self setShouldWaitToInflateCompressedResponses:YES];
 	[self setDefaultResponseEncoding:NSISOLatin1StringEncoding];
 	[self setShouldPresentProxyAuthenticationDialog:YES];
@@ -448,7 +449,8 @@ static NSOperationQueue *sharedQueue = nil;
 		[authenticationNeededBlock release];
 		authenticationNeededBlock = nil;
 	}
-	[[self class] performSelectorOnMainThread:@selector(releaseBlocks:) withObject:blocks waitUntilDone:[NSThread isMainThread]];
+    [[self class] performSelectorOnMainThread:@selector(releaseBlocks:) withObject:blocks waitUntilDone:[NSThread isMainThread]];
+        
 }
 // Always called on main thread
 + (void)releaseBlocks:(NSArray *)blocks
@@ -1064,8 +1066,10 @@ static NSOperationQueue *sharedQueue = nil;
 	if ([self isCancelled]) {
 		return;
 	}
-	
-	[self performSelectorOnMainThread:@selector(requestStarted) withObject:nil waitUntilDone:[NSThread isMainThread]];
+	if (shouldCallbackOnMainThread)
+        [self performSelectorOnMainThread:@selector(requestStarted) withObject:nil waitUntilDone:[NSThread isMainThread]];
+    else
+        [self requestStarted];
 	
 	[self setDownloadComplete:NO];
 	[self setComplete:NO];
@@ -1946,7 +1950,10 @@ static NSOperationQueue *sharedQueue = nil;
 	if ([self error] || [self mainRequest]) {
 		return;
 	}
-	[self performSelectorOnMainThread:@selector(reportFinished) withObject:nil waitUntilDone:[NSThread isMainThread]];
+    if (shouldCallbackOnMainThread)
+        [self performSelectorOnMainThread:@selector(reportFinished) withObject:nil waitUntilDone:[NSThread isMainThread]];
+    else
+        [self reportFinished];
 }
 
 /* ALWAYS CALLED ON MAIN THREAD! */
@@ -2042,8 +2049,11 @@ static NSOperationQueue *sharedQueue = nil;
 		[failedRequest setError:theError];
 	}
 
-	[failedRequest performSelectorOnMainThread:@selector(reportFailure) withObject:nil waitUntilDone:[NSThread isMainThread]];
-	
+    if (shouldCallbackOnMainThread)
+        [failedRequest performSelectorOnMainThread:@selector(reportFailure) withObject:nil waitUntilDone:[NSThread isMainThread]];
+	else
+        [failedRequest reportFailure];
+    
     if (!inProgress)
     {
         // if we're not in progress, we can't notify the queue we've finished (doing so can cause a crash later on)
@@ -4580,6 +4590,8 @@ static NSOperationQueue *sharedQueue = nil;
 @synthesize clientCertificates;
 @synthesize redirectURL;
 @synthesize shouldAffectNetworkIndicator; //GroupMe
+@synthesize shouldCallbackOnMainThread; //GroupMe
+
 #if TARGET_OS_IPHONE && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_4_0
 @synthesize shouldContinueWhenAppEntersBackground;
 #endif

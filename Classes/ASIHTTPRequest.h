@@ -162,6 +162,7 @@ typedef void (^ASIDataBlock)(NSData *data);
 
 	// GroupMe Addition.
 	BOOL shouldAffectNetworkIndicator;
+    BOOL shouldCallbackOnMainThread;
 	
 	
 	// When downloadDestinationPath is set, the result of this request will be downloaded to the file at this location
@@ -951,6 +952,7 @@ typedef void (^ASIDataBlock)(NSData *data);
 @property (assign) BOOL shouldCompressRequestBody;
 // GroupMe Addition.
 @property (assign) BOOL shouldAffectNetworkIndicator;
+@property (assign) BOOL shouldCallbackOnMainThread;
 
 @property (retain) NSURL *PACurl;
 @property (retain) NSString *authenticationScheme;
