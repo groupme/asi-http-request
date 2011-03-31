@@ -1067,10 +1067,11 @@ static NSOperationQueue *sharedQueue = nil;
 	if ([self isCancelled]) {
 		return;
 	}
-	if (shouldCallbackOnMainThread)
+	if (shouldCallbackOnMainThread) {
         [self performSelectorOnMainThread:@selector(requestStarted) withObject:nil waitUntilDone:[NSThread isMainThread]];
-    else
+    } else {
         [self requestStarted];
+	}
 	
 	[self setDownloadComplete:NO];
 	[self setComplete:NO];
@@ -2274,9 +2275,9 @@ static NSOperationQueue *sharedQueue = nil;
 
 	CFRelease(message);
 	if (shouldCallbackOnMainThread) {
-		[self requestReceivedResponseHeaders:[[[self responseHeaders] copy] autorelease]];
-	} else {
 		[self performSelectorOnMainThread:@selector(requestReceivedResponseHeaders:) withObject:[[[self responseHeaders] copy] autorelease] waitUntilDone:[NSThread isMainThread]];
+	} else {
+		[self requestReceivedResponseHeaders:[[[self responseHeaders] copy] autorelease]];
 	}
 }
 
