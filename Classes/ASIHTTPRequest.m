@@ -449,8 +449,9 @@ static NSOperationQueue *sharedQueue = nil;
 		[authenticationNeededBlock release];
 		authenticationNeededBlock = nil;
 	}
-    [[self class] performSelectorOnMainThread:@selector(releaseBlocks:) withObject:blocks waitUntilDone:[NSThread isMainThread]];
-        
+	if ([blocks count]) {
+		[[self class] performSelectorOnMainThread:@selector(releaseBlocks:) withObject:blocks waitUntilDone:[NSThread isMainThread]];
+	} 
 }
 // Always called on main thread
 + (void)releaseBlocks:(NSArray *)blocks
@@ -2272,7 +2273,11 @@ static NSOperationQueue *sharedQueue = nil;
 	}
 
 	CFRelease(message);
-	[self performSelectorOnMainThread:@selector(requestReceivedResponseHeaders:) withObject:[[[self responseHeaders] copy] autorelease] waitUntilDone:[NSThread isMainThread]];
+	if (shouldCallbackOnMainThread) {
+		[self requestReceivedResponseHeaders:[[[self responseHeaders] copy] autorelease]];
+	} else {
+		[self performSelectorOnMainThread:@selector(requestReceivedResponseHeaders:) withObject:[[[self responseHeaders] copy] autorelease] waitUntilDone:[NSThread isMainThread]];
+	}
 }
 
 - (void)parseStringEncodingFromHeaders
@@ -3480,7 +3485,11 @@ static NSOperationQueue *sharedQueue = nil;
 			// This can prevent flicker when you have a single request finish and then immediately start another request
 			// We run this on the main thread because we have no guarantee this thread will have a runloop in 0.5 seconds time
 			// We don't bother the cancel this call if we start a new request, because we'll check if requests are running before we hide it
-			[[self class] performSelectorOnMainThread:@selector(hideNetworkActivityIndicatorAfterDelay) withObject:nil waitUntilDone:[NSThread isMainThread]];
+			if (shouldCallbackOnMainThread) {
+				[[self class] performSelectorOnMainThread:@selector(hideNetworkActivityIndicatorAfterDelay) withObject:nil waitUntilDone:[NSThread isMainThread]];
+			} else {
+				[[self class] hideNetworkActivityIndicatorIfNeeeded];
+			}
 		}
 		[connectionsLock unlock];
 
